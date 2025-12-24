@@ -37,6 +37,9 @@ function App() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [placeholders, setPlaceholders] = useState<string[]>(INITIAL_PLACEHOLDERS);
   
+  // New state to handle missing API key gracefully
+  const [isApiConfigured, setIsApiConfigured] = useState<boolean>(true);
+
   const [drawerState, setDrawerState] = useState<{
       isOpen: boolean;
       mode: 'code' | 'variations' | null;
@@ -47,8 +50,14 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const gridScrollRef = useRef<HTMLDivElement>(null);
 
+  // Check API key configuration on mount
   useEffect(() => {
-      inputRef.current?.focus();
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      console.error("API_KEY is not configured in environment variables.");
+      setIsApiConfigured(false);
+    }
+    inputRef.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -72,6 +81,11 @@ function App() {
   };
 
   const handleSendMessage = useCallback(async (manualPrompt?: string) => {
+    if (!isApiConfigured) {
+      alert("Application is not configured with an API Key. Please check environment variables.");
+      return;
+    }
+
     const promptToUse = manualPrompt || inputValue;
     const trimmedInput = promptToUse.trim();
     
@@ -102,7 +116,12 @@ function App() {
 
     try {
         const apiKey = process.env.API_KEY;
-        if (!apiKey) throw new Error("API_KEY is not configured.");
+        // Double check key existence before calling API
+        if (!apiKey) {
+          setIsApiConfigured(false);
+          throw new Error("API_KEY missing");
+        }
+
         const ai = new GoogleGenAI({ apiKey });
 
         // First-person professional context with new socials and trajectory
@@ -238,7 +257,7 @@ Return ONLY RAW HTML. No markdown fences.
     } finally {
         setIsLoading(false);
     }
-  }, [inputValue, isLoading, sessions.length]);
+  }, [inputValue, isLoading, sessions.length, isApiConfigured]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && !isLoading) {
@@ -302,9 +321,16 @@ Return ONLY RAW HTML. No markdown fences.
                      <div className="empty-content">
                          <h1>My Portfolio</h1>
                          <p>Visualizing my journey from Web Dev to Web3 Security Research.</p>
-                         <button className="surprise-button" onClick={() => handleSendMessage("Generate my professional Web3 Security Portfolio with my socials")} disabled={isLoading}>
-                             <SparklesIcon /> Build My Website
-                         </button>
+                         
+                         {!isApiConfigured ? (
+                           <div className="config-error-notice" style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '12px 20px', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.3)', marginTop: '10px' }}>
+                             <strong>⚠️ Configuration needed:</strong> Please set GEMINI_API_KEY in Netlify settings.
+                           </div>
+                         ) : (
+                           <button className="surprise-button" onClick={() => handleSendMessage("Generate my professional Web3 Security Portfolio with my socials")} disabled={isLoading}>
+                               <SparklesIcon /> Build My Website
+                           </button>
+                         )}
                      </div>
                  </div>
 
@@ -347,22 +373,29 @@ Return ONLY RAW HTML. No markdown fences.
             </div>
 
             <div className="floating-input-container">
-                <div className={`input-wrapper ${isLoading ? 'loading' : ''}`}>
-                    {(!inputValue && !isLoading) && (
+                <div className={`input-wrapper ${isLoading ? 'loading' : ''} ${!isApiConfigured ? 'disabled' : ''}`} style={!isApiConfigured ? { opacity: 0.6, cursor: 'not-allowed' } : {}}>
+                    {(!inputValue && !isLoading && isApiConfigured) && (
                         <div className="animated-placeholder" key={placeholderIndex}>
                             <span className="placeholder-text">{placeholders[placeholderIndex]}</span>
                             <span className="tab-hint">Tab</span>
                         </div>
                     )}
+                    
+                    {!isApiConfigured && (
+                      <div className="animated-placeholder">
+                        <span className="placeholder-text">API Key missing in environment...</span>
+                      </div>
+                    )}
+
                     {!isLoading ? (
-                        <input ref={inputRef} type="text" value={inputValue} onChange={handleInputChange} onKeyDown={handleKeyDown} disabled={isLoading} />
+                        <input ref={inputRef} type="text" value={inputValue} onChange={handleInputChange} onKeyDown={handleKeyDown} disabled={isLoading || !isApiConfigured} />
                     ) : (
                         <div className="input-generating-label">
                             <span className="generating-prompt-text">{currentSession?.prompt}</span>
                             <ThinkingIcon />
                         </div>
                     )}
-                    <button className="send-button" onClick={() => handleSendMessage()} disabled={isLoading || !inputValue.trim()}>
+                    <button className="send-button" onClick={() => handleSendMessage()} disabled={isLoading || !inputValue.trim() || !isApiConfigured}>
                         <ArrowUpIcon />
                     </button>
                 </div>
