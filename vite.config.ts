@@ -8,10 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig(({ mode }) => {
-    // Load env file from the project root
-    const env = loadEnv(mode, resolve(__dirname), '');
+    // Load env file from the current directory
+    // '' as the third argument allows loading variables without VITE_ prefix
+    const env = loadEnv(mode, process.cwd(), '');
     
-    // Prioritize API_KEY, then GEMINI_API_KEY
+    // Prioritize API_KEY
     const apiKey = env.API_KEY || env.GEMINI_API_KEY || '';
     
     return {
@@ -21,9 +22,10 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        // This replaces all occurrences of 'process.env.API_KEY' in the source 
-        // with the actual string value during the build process.
+        // This explicitly shims the environment variable for the browser.
+        // It replaces the text 'process.env.API_KEY' with the actual key string during build.
         'process.env.API_KEY': JSON.stringify(apiKey),
+        'process.env': JSON.stringify({ API_KEY: apiKey })
       },
       resolve: {
         alias: {

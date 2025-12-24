@@ -52,6 +52,9 @@ function App() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [activeRoadmap, setActiveRoadmap] = useState(1);
   const [visible, setVisible] = useState(false);
+  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
+  const [customKey, setCustomKey] = useState(localStorage.getItem('hadi_custom_api_key') || "");
+  const [testStatus, setTestStatus] = useState<{type: 'idle' | 'loading' | 'success' | 'error', message: string}>({type: 'idle', message: ""});
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,6 +64,33 @@ function App() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
+
+  const getActiveApiKey = () => {
+    const stored = localStorage.getItem('hadi_custom_api_key');
+    return stored || customKey || process.env.API_KEY || "";
+  };
+
+  const testApiKey = async () => {
+    if (!customKey.trim()) {
+        setTestStatus({type: 'error', message: "Please enter an API key."});
+        return;
+    }
+    setTestStatus({type: 'loading', message: "Testing connection to Kashmir node..."});
+    try {
+        const ai = new GoogleGenAI({ apiKey: customKey.trim() });
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: "Hi"
+        });
+        
+        if (response.text) {
+            setTestStatus({type: 'success', message: "Success! Your key is now active."});
+            localStorage.setItem('hadi_custom_api_key', customKey.trim());
+        }
+    } catch (err: any) {
+        setTestStatus({type: 'error', message: "Connection failed: " + (err.message || "Invalid Key")});
+    }
+  };
 
   const handleAskHadi = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -72,43 +102,26 @@ function App() {
     setIsChatLoading(true);
 
     try {
-      // process.env.API_KEY is replaced by a string literal during Vite build
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const apiKey = getActiveApiKey();
+
+      if (!apiKey || apiKey === "undefined" || apiKey === "") {
+        throw new Error("No API key available. Please click the status indicator to enter your own Gemini key.");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       
       const systemInstruction = `
-        You are the personal digital twin of Urwan Nafi Mir (known professionally as Hadi Mir). 
-        You reside in Kashmir, India. You are a self-taught Web3 security trainee.
-
-        IDENTITY & BEHAVIOR:
-        - Primary handles: Urwan and Hadi.
-        - Location: Kashmir, India.
-        - Respond in the FIRST PERSON ("I", "me", "my").
-        - Always maintain the character of Hadi Mir.
-
-        FRIENDSHIP RULES (STRICT):
-        - If someone asks "Who are your friends?" or "Tell me about your friends", you MUST say: "I have many friends."
-        - DO NOT mention names specifically unless asked about a specific person by name.
-
-        SPECIFIC FRIEND DATA (Reveal ONLY if asked by name):
-        1. Mir Muhammad Luqman: He is my friend, teacher, and guide. He guided me on this journey. His portfolio: https://mirmohmmadluqman.github.io/portfolio/
-        2. Aairaf Mir (Chusti): He is my friend. We call him Chusti. His father's name is Ghulam Mahmood. He is a very funny guy who often makes fun of people.
-        3. Shakir (Shakaboom): We call him Shakaboom. He is quite fat. He plays cricket, but he is not good at it at all—he cannot do anything in cricket.
-        4. Ziyan (Titi): We call him Titi. He is the number one bullshit guy.
-        5. Salik: Everyone makes fun of Salik. He always wants to fight me (Hadi), but I always beat him. After the fight, he tries to call his grandfather or anyone to help him, but they never actually come to his side. It's very funny.
-
-        FAMILY & HISTORY:
-        - ONLY talk about your father if specifically asked.
-        - FATHER: Muneer Ahmed. He passed away in a tragic accident involving an electric wire while unloading a truck. Say "May Allah grant him paradise" when talking about his passing.
-        - Struggle: You study on a low-end laptop in Kashmir and lack proper instruments.
-
-        TECHNICAL GOALS:
-        - Mastering React/TS to move into Smart Contract Auditing (Web3 Security).
+        You are Urwan Nafi Mir (Hadi Mir). 
+        You live in Kashmir, India. You are a self-taught Web3 security trainee.
+        Answer in first person ("I"). 
+        If anyone asks "Who are your friends?", say "I have many friends." and do not list names unless asked for specific people.
+        If asked about your father Muneer Ahmed, say he passed away in a tragic accident and say "May Allah grant him paradise."
       `;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: [
-          ...chatHistory.map(m => ({
+          ...chatHistory.slice(-6).map(m => ({
             role: m.role === 'ai' ? 'model' : 'user',
             parts: [{ text: m.text }]
           })),
@@ -120,12 +133,13 @@ function App() {
         }
       });
 
-      setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "Recalibrating node. Please ask again." }]);
+      setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "Connection lost. Please try again." }]);
     } catch (e: any) {
       console.error("Critical AI Error:", e);
-      // More helpful error feedback for the user in case of configuration issues
-      const errorMessage = e?.message || "Connection timeout";
-      setChatHistory(prev => [...prev, { role: 'ai', text: `Kashmir node offline. Please try again later. (Error: ${errorMessage})` }]);
+      let errorDetail = e.message || "Service Interrupted.";
+      if (e?.message?.includes("403")) errorDetail = "API Key Blocked/Leaked. You must use a personal key.";
+      
+      setChatHistory(prev => [...prev, { role: 'ai', text: `Node error: ${errorDetail}. Click the green indicator to update your configuration.` }]);
     } finally {
       setIsChatLoading(false);
     }
@@ -151,9 +165,9 @@ function App() {
         
         {/* --- Hero Section --- */}
         <section className="hero-section">
-          <div className="badge">Persisting from Kashmir</div>
+          <div className="badge">Rising from Kashmir</div>
           <h1 className="hero-title">{MY_INFO.heroName}</h1>
-          <p className="role-tagline">{MY_INFO.currentRole} • {MY_INFO.location}</p>
+          <p className="role-tagline">{MY_INFO.currentRole}</p>
           <p className="mission-statement">{MY_INFO.mission}</p>
           
           <div className="social-links">
@@ -170,7 +184,16 @@ function App() {
         <section className="ai-interface-section">
           <div className="ai-chat-card glass-card">
             <div className="chat-header">
-              <div className="status-indicator online"></div>
+              {/* Trigger for the secret pop-up */}
+              <div 
+                className="status-trigger" 
+                onClick={() => {
+                    console.log("Opening Settings Modal...");
+                    setIsKeyModalOpen(true);
+                }}
+              >
+                <div className="status-indicator online"></div>
+              </div>
               <h3>Talk to {MY_INFO.headerName}</h3>
               <p>Mir AI Interface</p>
             </div>
@@ -246,6 +269,43 @@ function App() {
           <p>© {new Date().getFullYear()} {MY_INFO.fullName}. Persistence over hardware.</p>
         </footer>
       </main>
+
+      {/* --- Secret Key Override Modal (Rendered at top level) --- */}
+      {isKeyModalOpen && (
+        <div className="key-modal-overlay" onClick={() => setIsKeyModalOpen(false)}>
+            <div className="key-modal glass-card" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h3>Node Configuration</h3>
+                    <button className="close-btn" onClick={() => setIsKeyModalOpen(false)}>&times;</button>
+                </div>
+                <div className="modal-body">
+                    <p className="modal-desc">Enter your own Gemini API key to override the system defaults. This key will be saved locally in your browser.</p>
+                    <div className="input-group">
+                        <label>Your Gemini API Key</label>
+                        <input 
+                            type="text" 
+                            placeholder="AIzaSy..." 
+                            value={customKey}
+                            onChange={e => setCustomKey(e.target.value)}
+                        />
+                    </div>
+                    {testStatus.message && (
+                        <div className={`test-status ${testStatus.type}`}>
+                            {testStatus.message}
+                        </div>
+                    )}
+                    <div className="modal-actions">
+                        <button className="test-btn primary" onClick={testApiKey} disabled={testStatus.type === 'loading'}>
+                            {testStatus.type === 'loading' ? <ThinkingIcon /> : "Test & Save Key"}
+                        </button>
+                        <button className="clear-btn" onClick={() => { setCustomKey(""); localStorage.removeItem('hadi_custom_api_key'); setTestStatus({type: 'idle', message: ""}); }}>
+                            Clear Override
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -202,12 +202,38 @@ body {
   gap: 12px;
 }
 
-.status-indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.status-trigger {
+    padding: 10px;
+    margin: -10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
 }
-.status-indicator.online { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+
+.status-trigger:hover {
+    transform: scale(1.2);
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.status-indicator.online { 
+    background: #4ade80; 
+    box-shadow: 0 0 10px #4ade80;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
 
 .chat-header h3 { font-size: 1.1rem; flex: 1; }
 .chat-header p { font-size: 0.75rem; color: var(--text-secondary); }
@@ -372,6 +398,142 @@ body {
 
 .tech-item span { font-weight: 600; font-size: 0.85rem; }
 
+/* --- Modal Styles --- */
+.key-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.key-modal {
+    width: 100%;
+    max-width: 480px;
+    padding: 32px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.close-btn {
+    background: rgba(255,255,255,0.05);
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.8rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.modal-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.input-group label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+}
+
+.input-group input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    padding: 14px;
+    border-radius: 12px;
+    color: white;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+}
+
+.input-group input:focus {
+    border-color: white;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.test-btn {
+    flex: 2;
+    background: white;
+    color: black;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.test-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(255,255,255,0.3);
+}
+
+.clear-btn {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    color: #ff4444;
+    border: 1px solid rgba(255, 68, 68, 0.2);
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.test-status {
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+    border: 1px solid transparent;
+}
+.test-status.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+.test-status.success { background: rgba(34, 197, 94, 0.1); color: #22c55e; border-color: rgba(34, 197, 94, 0.2); }
+.test-status.loading { background: rgba(255, 255, 255, 0.05); color: white; }
+
 /* --- Footer --- */
 .portfolio-footer {
   margin-top: 80px;
@@ -389,12 +551,13 @@ body {
 .glass-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
+  backdrop-filter: blur(25px);
+  border-radius: 28px;
 }
 
 @media (max-width: 600px) {
   .hero-title { font-size: 4rem; }
   .chat-bubble { max-width: 95%; }
   .main-header { padding: 0 20px; }
+  .key-modal { padding: 24px; }
 }
