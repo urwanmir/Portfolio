@@ -105,25 +105,34 @@ function App() {
         if (!apiKey) throw new Error("API_KEY is not configured.");
         const ai = new GoogleGenAI({ apiKey });
 
-        // Professional-only context for Hadi's Portfolio
-        const HADI_CONTEXT = `
-USER IDENTITY: Hadi (Haadee).
-PROFESSIONAL GOAL: Web3 Security Researcher / Smart Contract Auditor.
-THE JOURNEY:
-- Phase 1: Mobile-Only Foundation (Tech Basics, Technical English via VOA/Mr. Bean).
-- Phase 2: Hardware Acquisition (Saving for Research Laptop).
-- Phase 3: Web3 Foundations (Solidity, HTML/CSS, Remix).
-- Phase 4: Advanced Security (Reentrancy, Overflow, Auditing, Foundry).
-CURRENT SKILL FOCUS: Technical English, Logic, Basic Programming Concepts.
-CORE VALUES: Persistence, Continuous Learning, Security-First mindset.
-NO PERSONAL/FAMILY MENTIONS: Keep it strictly about his professional identity and roadmap.
+        // First-person professional context with new socials and trajectory
+        const MY_CONTEXT = `
+MY IDENTITY: Urwan Mir (@urwanmir). An aspiring Web3 Security Researcher.
+MY SOCIALS:
+- Instagram: https://www.instagram.com/urwanmir/
+- Cyfrin: https://profiles.cyfrin.io/u/urwanmir
+- X: https://x.com/urwanmir
+- GitHub: https://github.com/urwanmir
+
+MY CURRENT STATUS & TRAJECTORY:
+- **Current State**: I am actively learning Web Development (HTML, CSS, JS, React).
+- **Next Phase**: Shifting to Web3 Security & Development (S&D) once foundations are solid.
+- **Long-term Goal**: Professional Smart Contract Auditor / Web3 Security Researcher.
+
+MY JOURNEY PHASES:
+- Phase 1: Mobile-Only Foundation (Tech Basics, Technical English).
+- Phase 2: Hardware Acquisition (Saving for my Research Laptop).
+- Phase 3: Web3 Foundations (Solidity, Auditing basics).
+- Phase 4: Full-time Web3 S&D and Professional Auditing.
+
+TONE: Confident, minimal, first-person ("I", "Me", "My").
         `;
 
         const stylePrompt = `
-${HADI_CONTEXT}
+${MY_CONTEXT}
 
-Generate 3 distinct, professional design directions for: "${trimmedInput}". 
-Make Hadi feel like a "Researcher in Training". Use high-tech, futuristic metaphors.
+Generate 3 distinct, professional design directions for my request: "${trimmedInput}". 
+Make it feel like a professional portfolio I built myself. Use high-tech, futuristic metaphors.
 
 Required JSON Output Format:
 ["Direction 1 Name", "Direction 2 Name", "Direction 3 Name"]
@@ -152,7 +161,7 @@ Required JSON Output Format:
                 ...s,
                 artifacts: s.artifacts.map((art, i) => ({
                     ...art,
-                    styleName: generatedStyles[i] || "Portfolio View"
+                    styleName: generatedStyles[i] || "My Portfolio View"
                 }))
             };
         }));
@@ -160,23 +169,24 @@ Required JSON Output Format:
         const generateArtifact = async (artifact: Artifact, styleInstruction: string) => {
             try {
                 const prompt = `
-${HADI_CONTEXT}
+${MY_CONTEXT}
 
-You are Flash UI. Create a professional, high-fidelity personal portfolio website for: "${trimmedInput}".
+You are Flash UI. Create a professional, high-fidelity personal portfolio website for me. 
+PROMPT: "${trimmedInput}"
 
 **CONCEPTUAL DIRECTION: ${styleInstruction}**
 
-**SECTIONS TO INCLUDE:**
-1. **Hero**: Hadi | Web3 Security Researcher (In Progress). Use a powerful tagline about securing the future of the web.
-2. **The 4-Stage Mastery Path**: A visual roadmap from Mobile Learning to Smart Contract Auditing.
-3. **Current Focus**: Section highlighting learning English & Basic Tech.
-4. **Hardware Goal**: A "Research Lab Milestone" for the upcoming laptop.
-5. **Future Skills**: Interactive badges for Solidity, Rust, and Security vulnerabilities.
+**REQUIRED SECTIONS:**
+1. **Hero**: Urwan Mir | Future Web3 Security Researcher. 
+2. **Current Status Note**: Clearly display: "I am currently learning web development, and will later shift to Web3 S&D."
+3. **Connect Section**: Include my social links (Instagram, Cyfrin, X, GitHub) with clean icons.
+4. **My Roadmap**: A visual path showing my progression from Web Dev basics to Web3 Security & Development.
+5. **Milestone Tracker**: Mention my hardware goal (Laptop) as a foundation for my research.
 
 **VISUAL RULES:**
-- Dark Theme: Obsidian, Indigo, Slate.
-- Professional: No personal/family history. Focus on the *career*.
-- Modern: Minimalist, clean fonts, subtle animation.
+- Theme: Dark, minimalist, high-tech (Obsidian/Slate/Indigo).
+- Professional Tone: Use "I", "Me", "My".
+- Fast & Responsive: Look great on mobile.
 
 Return ONLY RAW HTML. No markdown fences.
           `.trim();
@@ -290,10 +300,10 @@ Return ONLY RAW HTML. No markdown fences.
             <div className={`stage-container ${focusedArtifactIndex !== null ? 'mode-focus' : 'mode-split'}`}>
                  <div className={`empty-state ${hasStarted ? 'fade-out' : ''}`}>
                      <div className="empty-content">
-                         <h1>Hadi Portfolio</h1>
-                         <p>Professional Roadmap & Personal Brand Generator</p>
-                         <button className="surprise-button" onClick={() => handleSendMessage("Hadi: Professional Web3 Security Researcher Portfolio")} disabled={isLoading}>
-                             <SparklesIcon /> Generate Hadi's Website
+                         <h1>My Portfolio</h1>
+                         <p>Visualizing my journey from Web Dev to Web3 Security Research.</p>
+                         <button className="surprise-button" onClick={() => handleSendMessage("Generate my professional Web3 Security Portfolio with my socials")} disabled={isLoading}>
+                             <SparklesIcon /> Build My Website
                          </button>
                      </div>
                  </div>

@@ -5,11 +5,11 @@
 */
 
 export const INITIAL_PLACEHOLDERS = [
-    "Hadi: Web3 Security Portfolio",
-    "Security Researcher Roadmap Dashboard",
+    "My Web Dev to Web3 Security Path",
+    "Professional Portfolio with Social Links",
+    "My Security Researcher Roadmap",
     "Smart Contract Audit Learning Path",
     "Technical English & Math Progress Site",
-    "Researcher Station Hardware Milestone",
-    "Hadi's 4-Stage Evolution Portfolio",
-    "Zero-to-Researcher Future Vision"
+    "My Web3 S&D Vision Dashboard",
+    "Zero to Security Researcher Site"
 ];

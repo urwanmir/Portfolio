@@ -1,20 +1,23 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# My Web3 Security Path 🛡️
 
-# Run and deploy your AI Studio app
+This is my professional portfolio and roadmap engine, built to visualize my journey from Web Development to Web3 Security Research.
 
-This contains everything you need to run your app locally.
+## My Socials
+- **Instagram**: [urwanmir](https://www.instagram.com/urwanmir/)
+- **Cyfrin**: [urwanmir](https://profiles.cyfrin.io/u/urwanmir)
+- **X**: [urwanmir](https://x.com/urwanmir)
+- **GitHub**: [urwanmir](https://github.com/urwanmir)
 
-View your app in AI Studio: https://ai.studio/apps/drive/1nH17ic7yJOvFrOaQ-69dUV0_3R7zTK9J
+## What is this?
+It's my immersive dashboard generator. I'm currently mastering the foundations of Web Development, with a clear vision to shift into Web3 Security & Development (S&D). This tool generates actual UI artifacts that represent my evolving professional identity.
 
-## Run Locally
+## Tech Stack
+- **React 19**: Powers the UI logic and immersive background.
+- **Gemini API**: The intelligence engine creating high-fidelity portfolio components.
+- **Tailwind-style CSS**: All my artifacts are generated as clean, responsive HTML.
 
-**Prerequisites:**  Node.js
+## How I use it
+I type in my specific goals (e.g., "Web Dev foundations" or "Web3 S&D transition") and the engine designs 3 different professional directions for my portfolio.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+*Created by Urwan Mir. Focused on the future of Web3.*
