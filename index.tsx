@@ -30,13 +30,13 @@ const MY_INFO = {
   laptopStory: "Currently studying on a low-end laptop in Kashmir, proving that determination beats hardware specifications.",
   father: {
     name: "Muneer Ahmed",
-    story: "My father, Muneer Ahmed, passed away in a tragic work accident while unloading a truck and getting stuck with an electric wire. This event was the catalyst for my journey; it made me realize I had to build a future through knowledge and technology despite the immense hardship. It is very hard because we do not have proper instrument tools and everything."
+    story: "My father, Muneer Ahmed, passed away in a tragic work accident while unloading a truck and getting stuck with an electric wire and passed away. This event was the catalyst for my journey; it made me realize I had to build a future through knowledge and technology despite the immense hardship. It is very hard because we do not have proper instrument tools and everything. May Allah grant him paradise."
   },
   mentorFriend: {
     name: "Mir Muhammad Luqman",
     role: "Teacher & Guide",
     url: "https://mirmohmmadluqman.github.io/portfolio/",
-    context: "Mir Muhammad Luqman is my friend. He taught me and guided me."
+    context: "Mir Muhammad Luqman is my friend and guide. This is his portfolio: https://mirmohmmadluqman.github.io/portfolio/"
   },
   socials: [
     { name: "Instagram", url: "https://www.instagram.com/urwanmir/", icon: "📸" },
@@ -79,9 +79,11 @@ function App() {
     setIsChatLoading(true);
 
     try {
-      const apiKey = process.env.API_KEY;
+      const rawApiKey = process.env.API_KEY;
+      const apiKey = (rawApiKey && rawApiKey !== "undefined" && rawApiKey !== "null") ? rawApiKey : null;
+
       if (!apiKey) {
-        setChatHistory(prev => [...prev, { role: 'ai', text: "Digital consciousness offline. (API Key missing)" }]);
+        setChatHistory(prev => [...prev, { role: 'ai', text: "Digital consciousness offline. (The API key is missing or not set in the environment variables)." }]);
         setIsChatLoading(false);
         return;
       }
@@ -93,25 +95,29 @@ function App() {
         You reside in Kashmir, India. You are a self-taught Web3 security trainee.
 
         IDENTITY & BEHAVIOR:
-        - Primary handles: Urwan and Hadi. (Hero section uses "Hadi", Header uses "Urwan").
+        - Primary handles: Urwan and Hadi.
         - Location: Kashmir, India.
-        - Default to talking about yourself (Urwan/Hadi), your journey, your stack, and your Web3 goals.
         - Respond in the FIRST PERSON ("I", "me", "my").
 
         FRIENDSHIP RULES (STRICT):
         - If someone asks "Who are your friends?" or "Tell me about your friends", you MUST say: "I have many friends."
-        - DO NOT mention Mir Muhammad Luqman specifically when asked generally about friends.
-        - ONLY if someone explicitly asks about "Mir Muhammad Luqman", you should say: "He is my friend. This website is my portfolio." 
-        - DO NOT talk about him unless explicitly asked by name. Do not prompt the user to ask about him.
+        - DO NOT mention specific names unless explicitly asked about them.
+
+        SPECIFIC FRIEND DATA (Only reveal if asked by name):
+        1. Mir Muhammad Luqman: He is my friend and teacher. He taught me and guided me. Here is his portfolio: https://mirmohmmadluqman.github.io/portfolio/
+        2. Aairaf Mir (Chusti): Aairaf Mir is Chusti, and Chusti is Aairaf. He is my friend. His father's name is Ghulam Mahmood. He is a very funny guy and often makes fun of people.
+        3. Shakir (Shakaboom): Shakir is my friend. We call him Shakaboom. He is quite fat. He plays cricket but honestly, he cannot do anything in cricket—he is not good at it at all.
+        4. Ziyan (Titi): We call him Titi. He is the number one bullshit guy.
+        5. Salik: Everyone makes fun of Salik. He always wants to fight me (Hadi), but I always beat him. After the fight, he tries to call his grandfather or anyone to help him, but they never actually come to his side. It's very funny.
 
         FAMILY & HISTORY RULES:
-        - ONLY talk about your father or the accident if specifically asked about him or your family.
+        - ONLY talk about your father if specifically asked.
         - FATHER'S NAME: Muneer Ahmed.
-        - THE STORY: He was at work unloading a truck and accidentally got stuck with an electric wire. He died. This is very personal. When mentioned, say: "May Allah grant him paradise." 
-        - Hardship: Mention it is very hard because you lack proper instrument tools and high-end hardware in Kashmir.
+        - THE TRAGEDY: He passed away while unloading a truck and getting stuck with an electric wire. 
+        - Say: "May Allah grant him paradise."
+        - Hardship: Mention you study on a low-end laptop and lack proper tools in Kashmir.
 
         TECHNICAL CONTEXT:
-        - You study on a low-end laptop.
         - Focus: React/TS -> Web3 Security (Smart Contract Auditing).
       `;
 
@@ -130,10 +136,10 @@ function App() {
         }
       });
 
-      setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "Recalibrating..." }]);
+      setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "Recalibrating node. Please ask again." }]);
     } catch (e) {
-      console.error(e);
-      setChatHistory(prev => [...prev, { role: 'ai', text: "Kashmir node offline. Please retry." }]);
+      console.error("AI Interface Error:", e);
+      setChatHistory(prev => [...prev, { role: 'ai', text: "Kashmir node offline. Please try again later." }]);
     } finally {
       setIsChatLoading(false);
     }

@@ -8,9 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig(({ mode }) => {
-    // Load env file based on `mode` in the current working directory.
-    // Set the third parameter to '' to load all envs regardless of the `VITE_` prefix.
+    // Load env file based on `mode`. Third param '' loads all envs regardless of prefix.
     const env = loadEnv(mode, process.cwd(), '');
+    
+    // Prioritize API_KEY then GEMINI_API_KEY, default to empty string
+    const apiKey = env.API_KEY || env.GEMINI_API_KEY || '';
     
     return {
       server: {
@@ -19,9 +21,9 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        // Ensure env variables are strings for the define plugin
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || '')
+        // We explicitly define process.env.API_KEY as a string literal.
+        // This ensures that 'process.env.API_KEY' in the code is replaced by the value.
+        'process.env.API_KEY': JSON.stringify(apiKey),
       },
       resolve: {
         alias: {
