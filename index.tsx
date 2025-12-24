@@ -37,7 +37,7 @@ function App() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [placeholders, setPlaceholders] = useState<string[]>(INITIAL_PLACEHOLDERS);
   
-  // New state to handle missing API key gracefully
+  // Track if API is configured to avoid blank page crash
   const [isApiConfigured, setIsApiConfigured] = useState<boolean>(true);
 
   const [drawerState, setDrawerState] = useState<{
@@ -50,14 +50,13 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const gridScrollRef = useRef<HTMLDivElement>(null);
 
-  // Check API key configuration on mount
   useEffect(() => {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      console.error("API_KEY is not configured in environment variables.");
-      setIsApiConfigured(false);
-    }
-    inputRef.current?.focus();
+      // Safely check for API key
+      const apiKey = process.env.API_KEY;
+      if (!apiKey || apiKey === '') {
+        setIsApiConfigured(false);
+      }
+      inputRef.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -81,8 +80,9 @@ function App() {
   };
 
   const handleSendMessage = useCallback(async (manualPrompt?: string) => {
-    if (!isApiConfigured) {
-      alert("Application is not configured with an API Key. Please check environment variables.");
+    const apiKey = process.env.API_KEY;
+    if (!apiKey || apiKey === '' || !isApiConfigured) {
+      setIsApiConfigured(false);
       return;
     }
 
@@ -115,16 +115,8 @@ function App() {
     setFocusedArtifactIndex(null); 
 
     try {
-        const apiKey = process.env.API_KEY;
-        // Double check key existence before calling API
-        if (!apiKey) {
-          setIsApiConfigured(false);
-          throw new Error("API_KEY missing");
-        }
-
         const ai = new GoogleGenAI({ apiKey });
 
-        // First-person professional context with new socials and trajectory
         const MY_CONTEXT = `
 MY IDENTITY: Urwan Mir (@urwanmir). An aspiring Web3 Security Researcher.
 MY SOCIALS:
@@ -322,14 +314,14 @@ Return ONLY RAW HTML. No markdown fences.
                          <h1>My Portfolio</h1>
                          <p>Visualizing my journey from Web Dev to Web3 Security Research.</p>
                          
-                         {!isApiConfigured ? (
-                           <div className="config-error-notice" style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '12px 20px', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.3)', marginTop: '10px' }}>
-                             <strong>⚠️ Configuration needed:</strong> Please set GEMINI_API_KEY in Netlify settings.
-                           </div>
+                         {isApiConfigured ? (
+                            <button className="surprise-button" onClick={() => handleSendMessage("Generate my professional Web3 Security Portfolio with my socials")} disabled={isLoading}>
+                                <SparklesIcon /> Build My Website
+                            </button>
                          ) : (
-                           <button className="surprise-button" onClick={() => handleSendMessage("Generate my professional Web3 Security Portfolio with my socials")} disabled={isLoading}>
-                               <SparklesIcon /> Build My Website
-                           </button>
+                            <div style={{ padding: '20px', background: 'rgba(255,0,0,0.1)', border: '1px solid rgba(255,0,0,0.2)', borderRadius: '12px', marginTop: '20px', color: '#ff6b6b' }}>
+                                <strong>⚠️ Action Required:</strong> API Key is not configured. Add <code>GEMINI_API_KEY</code> to your Netlify environment variables to enable generation.
+                            </div>
                          )}
                      </div>
                  </div>
@@ -373,7 +365,7 @@ Return ONLY RAW HTML. No markdown fences.
             </div>
 
             <div className="floating-input-container">
-                <div className={`input-wrapper ${isLoading ? 'loading' : ''} ${!isApiConfigured ? 'disabled' : ''}`} style={!isApiConfigured ? { opacity: 0.6, cursor: 'not-allowed' } : {}}>
+                <div className={`input-wrapper ${isLoading ? 'loading' : ''} ${!isApiConfigured ? 'disabled' : ''}`}>
                     {(!inputValue && !isLoading && isApiConfigured) && (
                         <div className="animated-placeholder" key={placeholderIndex}>
                             <span className="placeholder-text">{placeholders[placeholderIndex]}</span>
@@ -382,13 +374,20 @@ Return ONLY RAW HTML. No markdown fences.
                     )}
                     
                     {!isApiConfigured && (
-                      <div className="animated-placeholder">
-                        <span className="placeholder-text">API Key missing in environment...</span>
-                      </div>
+                        <div className="animated-placeholder">
+                            <span className="placeholder-text" style={{ color: '#ff6b6b' }}>Setup Required: Connect Gemini API Key</span>
+                        </div>
                     )}
 
                     {!isLoading ? (
-                        <input ref={inputRef} type="text" value={inputValue} onChange={handleInputChange} onKeyDown={handleKeyDown} disabled={isLoading || !isApiConfigured} />
+                        <input 
+                            ref={inputRef} 
+                            type="text" 
+                            value={inputValue} 
+                            onChange={handleInputChange} 
+                            onKeyDown={handleKeyDown} 
+                            disabled={isLoading || !isApiConfigured} 
+                        />
                     ) : (
                         <div className="input-generating-label">
                             <span className="generating-prompt-text">{currentSession?.prompt}</span>
