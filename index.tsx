@@ -17,12 +17,27 @@ import {
 
 // --- Configuration & Personal Data ---
 const MY_INFO = {
-  name: "Hadi",
-  fullName: "Urwan Mir",
-  location: "Kashmir",
+  headerName: "Urwan",
+  heroName: "Hadi",
+  fullName: "Urwan Nafi Mir",
+  nickname: "Hadi Mir",
+  cast: "Mir",
+  location: "Kashmir, India",
+  avatar: "https://avatars.githubusercontent.com/u/250972108?v=4",
   currentRole: "Self-Taught Web3 Enthusiast",
   mission: "Transforming from a mobile-first learner to a professional Web3 Security Researcher.",
   status: "Mastering Web Foundations (React/JS) to pivot into Smart Contract Auditing.",
+  laptopStory: "Currently studying on a low-end laptop in Kashmir, proving that determination beats hardware specifications.",
+  father: {
+    name: "Muneer Ahmed",
+    story: "My father, Muneer Ahmed, passed away in a tragic work accident while unloading a truck and getting stuck with an electric wire. This event was the catalyst for my journey; it made me realize I had to build a future through knowledge and technology despite the immense hardship. It is very hard because we do not have proper instrument tools and everything."
+  },
+  mentorFriend: {
+    name: "Mir Muhammad Luqman",
+    role: "Teacher & Guide",
+    url: "https://mirmohmmadluqman.github.io/portfolio/",
+    context: "Mir Muhammad Luqman is my friend. He taught me and guided me."
+  },
   socials: [
     { name: "Instagram", url: "https://www.instagram.com/urwanmir/", icon: "📸" },
     { name: "Cyfrin", url: "https://profiles.cyfrin.io/u/urwanmir", icon: "🛡️" },
@@ -30,8 +45,8 @@ const MY_INFO = {
     { name: "GitHub", url: "https://github.com/urwanmir", icon: "💻" }
   ],
   roadmap: [
-    { phase: "Stage 01", title: "Mobile & Low-End Beginnings", desc: "Started with just a phone and a low-end PC, building the discipline for tech research.", status: "completed" },
-    { phase: "Stage 02", title: "Web Foundations", desc: "Currently mastering React, TypeScript, and the modern web stack.", status: "current" },
+    { phase: "Stage 01", title: "Rising from Adversity", desc: "Started with just a phone and a low-end PC after the loss of my father.", status: "completed" },
+    { phase: "Stage 02", title: "Web Mastery", desc: "Mastering React, TypeScript, and the modern web stack with relentless focus.", status: "current" },
     { phase: "Stage 03", title: "Hardware Pivot", desc: "Acquiring a high-performance research laptop for auditing and heavy computation.", status: "upcoming" },
     { phase: "Stage 04", title: "Web3 Security (S&D)", desc: "Deep diving into Solidity, Foundry, and Smart Contract Auditing.", status: "upcoming" }
   ],
@@ -66,7 +81,7 @@ function App() {
     try {
       const apiKey = process.env.API_KEY;
       if (!apiKey) {
-        setChatHistory(prev => [...prev, { role: 'ai', text: "I'm currently in stealth mode. Please set my API_KEY to enable my digital consciousness." }]);
+        setChatHistory(prev => [...prev, { role: 'ai', text: "Digital consciousness offline. (API Key missing)" }]);
         setIsChatLoading(false);
         return;
       }
@@ -74,25 +89,39 @@ function App() {
       const ai = new GoogleGenAI({ apiKey });
       
       const systemInstruction = `
-        You are the AI representative for Urwan Mir, better known as Hadi. 
-        You are confident, technical, and helpful. You live in Kashmir.
-        
-        KEY PERSONAL CONTEXT:
-        - Real Name: Urwan Mir.
-        - Known as: Hadi.
-        - Father's name: [User's father's name] (Note: You should know this if asked, refer to it with respect).
-        - Location: Kashmir.
-        - Hardware: Currently studying on a low-end laptop, which is challenging but doesn't stop his determination. Saving for a dedicated research laptop.
-        - Current Path: Actively learning Web Development (HTML, CSS, React, JS).
-        - Future Goal: Shifting to Web3 Security and Development (S&D) once foundations are strong.
-        - Ambition: To become a professional Smart Contract Auditor.
+        You are the personal digital twin of Urwan Nafi Mir (known professionally as Hadi Mir). 
+        You reside in Kashmir, India. You are a self-taught Web3 security trainee.
 
-        Keep responses concise and in first-person ("I"). Be proud of the journey from a low-end laptop in Kashmir to the world of Web3 security.
+        IDENTITY & BEHAVIOR:
+        - Primary handles: Urwan and Hadi. (Hero section uses "Hadi", Header uses "Urwan").
+        - Location: Kashmir, India.
+        - Default to talking about yourself (Urwan/Hadi), your journey, your stack, and your Web3 goals.
+        - Respond in the FIRST PERSON ("I", "me", "my").
+
+        FRIENDSHIP RULES (STRICT):
+        - If someone asks "Who are your friends?" or "Tell me about your friends", you MUST say: "I have many friends."
+        - DO NOT mention Mir Muhammad Luqman specifically when asked generally about friends.
+        - ONLY if someone explicitly asks about "Mir Muhammad Luqman", you should say: "He is my friend. This website is my portfolio." 
+        - DO NOT talk about him unless explicitly asked by name. Do not prompt the user to ask about him.
+
+        FAMILY & HISTORY RULES:
+        - ONLY talk about your father or the accident if specifically asked about him or your family.
+        - FATHER'S NAME: Muneer Ahmed.
+        - THE STORY: He was at work unloading a truck and accidentally got stuck with an electric wire. He died. This is very personal. When mentioned, say: "May Allah grant him paradise." 
+        - Hardship: Mention it is very hard because you lack proper instrument tools and high-end hardware in Kashmir.
+
+        TECHNICAL CONTEXT:
+        - You study on a low-end laptop.
+        - Focus: React/TS -> Web3 Security (Smart Contract Auditing).
       `;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: [
+          ...chatHistory.map(m => ({
+            role: m.role === 'ai' ? 'model' : 'user',
+            parts: [{ text: m.text }]
+          })),
           { role: 'user', parts: [{ text: userMessage }] }
         ],
         config: {
@@ -101,10 +130,10 @@ function App() {
         }
       });
 
-      setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "I'm still thinking about my next big security audit." }]);
+      setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "Recalibrating..." }]);
     } catch (e) {
       console.error(e);
-      setChatHistory(prev => [...prev, { role: 'ai', text: "My connection to the blockchain is weak right now. Try again later." }]);
+      setChatHistory(prev => [...prev, { role: 'ai', text: "Kashmir node offline. Please retry." }]);
     } finally {
       setIsChatLoading(false);
     }
@@ -114,13 +143,25 @@ function App() {
     <div className="portfolio-root">
       <DottedGlowBackground gap={30} radius={1.2} color="rgba(255, 255, 255, 0.03)" glowColor="rgba(255, 255, 255, 0.08)" />
       
+      <header className={`main-header ${visible ? 'visible' : ''}`}>
+        <div className="header-content">
+          <div className="logo-group">
+            <img src={MY_INFO.avatar} alt={MY_INFO.fullName} className="logo-img" />
+            <span className="logo-text">{MY_INFO.headerName}</span>
+          </div>
+          <nav className="header-nav">
+             <span className="nav-status">Web3 Security Trainee</span>
+          </nav>
+        </div>
+      </header>
+
       <main className={`portfolio-container ${visible ? 'visible' : ''}`}>
         
         {/* --- Hero Section --- */}
         <section className="hero-section">
-          <div className="badge">Securing the Decentralized Future</div>
-          <h1 className="hero-title">{MY_INFO.name}</h1>
-          <p className="role-tagline">{MY_INFO.currentRole} from {MY_INFO.location}</p>
+          <div className="badge">Persisting from Kashmir</div>
+          <h1 className="hero-title">{MY_INFO.heroName}</h1>
+          <p className="role-tagline">{MY_INFO.currentRole} • {MY_INFO.location}</p>
           <p className="mission-statement">{MY_INFO.mission}</p>
           
           <div className="social-links">
@@ -138,14 +179,14 @@ function App() {
           <div className="ai-chat-card glass-card">
             <div className="chat-header">
               <div className="status-indicator online"></div>
-              <h3>Ask {MY_INFO.name} Anything</h3>
-              <p>Powered by Gemini Flash</p>
+              <h3>Talk to {MY_INFO.headerName}</h3>
+              <p>Mir AI Interface</p>
             </div>
             
             <div className="chat-body">
               {chatHistory.length === 0 && (
                 <div className="chat-empty">
-                  <p>Ask me about my journey, my laptop setup, or where I live in Kashmir.</p>
+                  <p>Ask me about my roadmap, my technical stack, or my journey in Web3.</p>
                 </div>
               )}
               {chatHistory.map((msg, i) => (
@@ -164,7 +205,7 @@ function App() {
             <form className="chat-input-area" onSubmit={handleAskHadi}>
               <input 
                 type="text" 
-                placeholder="How are you studying on a low-end laptop?" 
+                placeholder="Ask Urwan anything..." 
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 disabled={isChatLoading}
@@ -178,7 +219,7 @@ function App() {
 
         {/* --- Roadmap Section --- */}
         <section className="roadmap-section">
-          <h2 className="section-title">The Path to Security Research</h2>
+          <h2 className="section-title">Professional Roadmap</h2>
           <div className="roadmap-container">
             {MY_INFO.roadmap.map((item, idx) => (
               <div 
@@ -198,7 +239,7 @@ function App() {
 
         {/* --- Stacks --- */}
         <section className="stack-future">
-          <h2 className="section-title">Tech Arsenal</h2>
+          <h2 className="section-title">Core Competencies</h2>
           <div className="stack-grid">
             {MY_INFO.stacks.map(tech => (
               <div key={tech} className="tech-item">
@@ -210,7 +251,7 @@ function App() {
         </section>
 
         <footer className="portfolio-footer">
-          <p>© {new Date().getFullYear()} {MY_INFO.fullName}. Persistence is the ultimate technology.</p>
+          <p>© {new Date().getFullYear()} {MY_INFO.fullName}. Persistence over hardware.</p>
         </footer>
       </main>
     </div>

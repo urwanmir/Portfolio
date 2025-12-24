@@ -10,7 +10,7 @@
   --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.08);
   --ai-bubble: rgba(255, 255, 255, 0.05);
-  --user-bubble: rgba(255, 255, 255, 0.15);
+  --user-bubble: rgba(255, 255, 255, 0.12);
 }
 
 * {
@@ -32,10 +32,70 @@ body {
   position: relative;
 }
 
+/* --- Main Header --- */
+.main-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: rgba(5, 5, 5, 0.5);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 1s ease;
+}
+
+.main-header.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.header-content {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+}
+
+.logo-text {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.nav-status {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
 .portfolio-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 60px 24px;
+  padding: 120px 24px 60px;
   position: relative;
   z-index: 10;
   opacity: 0;
@@ -167,6 +227,7 @@ body {
   max-width: 85%;
   font-size: 0.95rem;
   animation: fadeIn 0.3s ease forwards;
+  line-height: 1.5;
 }
 
 .chat-bubble.ai {
@@ -179,6 +240,7 @@ body {
 .chat-bubble.user {
   align-self: flex-end;
   background: var(--user-bubble);
+  border: 1px solid var(--glass-border);
   border-bottom-right-radius: 4px;
 }
 
@@ -334,4 +396,5 @@ body {
 @media (max-width: 600px) {
   .hero-title { font-size: 4rem; }
   .chat-bubble { max-width: 95%; }
+  .main-header { padding: 0 20px; }
 }
