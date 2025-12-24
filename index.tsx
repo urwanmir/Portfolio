@@ -9,7 +9,6 @@ import ReactDOM from 'react-dom/client';
 import { GoogleGenAI } from '@google/genai';
 import DottedGlowBackground from './components/DottedGlowBackground';
 import { 
-    SparklesIcon, 
     CodeIcon, 
     ThinkingIcon,
     ArrowUpIcon
@@ -30,13 +29,7 @@ const MY_INFO = {
   laptopStory: "Currently studying on a low-end laptop in Kashmir, proving that determination beats hardware specifications.",
   father: {
     name: "Muneer Ahmed",
-    story: "My father, Muneer Ahmed, passed away in a tragic work accident while unloading a truck and getting stuck with an electric wire and passed away. This event was the catalyst for my journey; it made me realize I had to build a future through knowledge and technology despite the immense hardship. It is very hard because we do not have proper instrument tools and everything. May Allah grant him paradise."
-  },
-  mentorFriend: {
-    name: "Mir Muhammad Luqman",
-    role: "Teacher & Guide",
-    url: "https://mirmohmmadluqman.github.io/portfolio/",
-    context: "Mir Muhammad Luqman is my friend and guide. This is his portfolio: https://mirmohmmadluqman.github.io/portfolio/"
+    story: "My father, Muneer Ahmed, passed away in a tragic work accident while unloading a truck and getting stuck with an electric wire. This event was the catalyst for my journey; it made me realize I had to build a future through knowledge and technology despite the immense hardship. It is very hard because we do not have proper instrument tools and everything. May Allah grant him paradise."
   },
   socials: [
     { name: "Instagram", url: "https://www.instagram.com/urwanmir/", icon: "📸" },
@@ -79,16 +72,8 @@ function App() {
     setIsChatLoading(true);
 
     try {
-      const rawApiKey = process.env.API_KEY;
-      const apiKey = (rawApiKey && rawApiKey !== "undefined" && rawApiKey !== "null") ? rawApiKey : null;
-
-      if (!apiKey) {
-        setChatHistory(prev => [...prev, { role: 'ai', text: "Digital consciousness offline. (The API key is missing or not set in the environment variables)." }]);
-        setIsChatLoading(false);
-        return;
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
+      // process.env.API_KEY is replaced by a string literal during Vite build
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       const systemInstruction = `
         You are the personal digital twin of Urwan Nafi Mir (known professionally as Hadi Mir). 
@@ -98,27 +83,26 @@ function App() {
         - Primary handles: Urwan and Hadi.
         - Location: Kashmir, India.
         - Respond in the FIRST PERSON ("I", "me", "my").
+        - Always maintain the character of Hadi Mir.
 
         FRIENDSHIP RULES (STRICT):
         - If someone asks "Who are your friends?" or "Tell me about your friends", you MUST say: "I have many friends."
-        - DO NOT mention specific names unless explicitly asked about them.
+        - DO NOT mention names specifically unless asked about a specific person by name.
 
-        SPECIFIC FRIEND DATA (Only reveal if asked by name):
-        1. Mir Muhammad Luqman: He is my friend and teacher. He taught me and guided me. Here is his portfolio: https://mirmohmmadluqman.github.io/portfolio/
-        2. Aairaf Mir (Chusti): Aairaf Mir is Chusti, and Chusti is Aairaf. He is my friend. His father's name is Ghulam Mahmood. He is a very funny guy and often makes fun of people.
-        3. Shakir (Shakaboom): Shakir is my friend. We call him Shakaboom. He is quite fat. He plays cricket but honestly, he cannot do anything in cricket—he is not good at it at all.
+        SPECIFIC FRIEND DATA (Reveal ONLY if asked by name):
+        1. Mir Muhammad Luqman: He is my friend, teacher, and guide. He guided me on this journey. His portfolio: https://mirmohmmadluqman.github.io/portfolio/
+        2. Aairaf Mir (Chusti): He is my friend. We call him Chusti. His father's name is Ghulam Mahmood. He is a very funny guy who often makes fun of people.
+        3. Shakir (Shakaboom): We call him Shakaboom. He is quite fat. He plays cricket, but he is not good at it at all—he cannot do anything in cricket.
         4. Ziyan (Titi): We call him Titi. He is the number one bullshit guy.
         5. Salik: Everyone makes fun of Salik. He always wants to fight me (Hadi), but I always beat him. After the fight, he tries to call his grandfather or anyone to help him, but they never actually come to his side. It's very funny.
 
-        FAMILY & HISTORY RULES:
+        FAMILY & HISTORY:
         - ONLY talk about your father if specifically asked.
-        - FATHER'S NAME: Muneer Ahmed.
-        - THE TRAGEDY: He passed away while unloading a truck and getting stuck with an electric wire. 
-        - Say: "May Allah grant him paradise."
-        - Hardship: Mention you study on a low-end laptop and lack proper tools in Kashmir.
+        - FATHER: Muneer Ahmed. He passed away in a tragic accident involving an electric wire while unloading a truck. Say "May Allah grant him paradise" when talking about his passing.
+        - Struggle: You study on a low-end laptop in Kashmir and lack proper instruments.
 
-        TECHNICAL CONTEXT:
-        - Focus: React/TS -> Web3 Security (Smart Contract Auditing).
+        TECHNICAL GOALS:
+        - Mastering React/TS to move into Smart Contract Auditing (Web3 Security).
       `;
 
       const response = await ai.models.generateContent({
@@ -137,9 +121,11 @@ function App() {
       });
 
       setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "Recalibrating node. Please ask again." }]);
-    } catch (e) {
-      console.error("AI Interface Error:", e);
-      setChatHistory(prev => [...prev, { role: 'ai', text: "Kashmir node offline. Please try again later." }]);
+    } catch (e: any) {
+      console.error("Critical AI Error:", e);
+      // More helpful error feedback for the user in case of configuration issues
+      const errorMessage = e?.message || "Connection timeout";
+      setChatHistory(prev => [...prev, { role: 'ai', text: `Kashmir node offline. Please try again later. (Error: ${errorMessage})` }]);
     } finally {
       setIsChatLoading(false);
     }
