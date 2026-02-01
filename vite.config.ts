@@ -9,8 +9,8 @@ const __dirname = dirname(__filename);
 
 export default defineConfig(({ mode }) => {
     // Load env file from the current directory
-    // '' as the third argument allows loading variables without VITE_ prefix
-    const env = loadEnv(mode, process.cwd(), '');
+    // Fix: Property 'cwd' does not exist on type 'Process' by using resolve(__dirname)
+    const env = loadEnv(mode, resolve(__dirname), '');
     
     // Prioritize API_KEY
     const apiKey = env.API_KEY || env.GEMINI_API_KEY || '';

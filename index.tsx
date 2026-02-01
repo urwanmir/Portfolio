@@ -20,17 +20,10 @@ const MY_INFO = {
   heroName: "Hadi",
   fullName: "Urwan Nafi Mir",
   nickname: "Hadi Mir",
-  cast: "Mir",
   location: "Kashmir, India",
   avatar: "https://avatars.githubusercontent.com/u/250972108?v=4",
   currentRole: "Self-Taught Web3 Enthusiast",
   mission: "Transforming from a mobile-first learner to a professional Web3 Security Researcher.",
-  status: "Mastering Web Foundations (React/JS) to pivot into Smart Contract Auditing.",
-  laptopStory: "Currently studying on a low-end laptop in Kashmir, proving that determination beats hardware specifications.",
-  father: {
-    name: "Muneer Ahmed",
-    story: "My father, Muneer Ahmed, passed away in a tragic work accident while unloading a truck and getting stuck with an electric wire. This event was the catalyst for my journey; it made me realize I had to build a future through knowledge and technology despite the immense hardship. It is very hard because we do not have proper instrument tools and everything. May Allah grant him paradise."
-  },
   socials: [
     { name: "Instagram", url: "https://www.instagram.com/urwanmir/", icon: "📸" },
     { name: "Cyfrin", url: "https://profiles.cyfrin.io/u/urwanmir", icon: "🛡️" },
@@ -52,9 +45,6 @@ function App() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [activeRoadmap, setActiveRoadmap] = useState(1);
   const [visible, setVisible] = useState(false);
-  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
-  const [customKey, setCustomKey] = useState(localStorage.getItem('hadi_custom_api_key') || "");
-  const [testStatus, setTestStatus] = useState<{type: 'idle' | 'loading' | 'success' | 'error', message: string}>({type: 'idle', message: ""});
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,33 +55,7 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
 
-  const getActiveApiKey = () => {
-    const stored = localStorage.getItem('hadi_custom_api_key');
-    return stored || customKey || process.env.API_KEY || "";
-  };
-
-  const testApiKey = async () => {
-    if (!customKey.trim()) {
-        setTestStatus({type: 'error', message: "Please enter an API key."});
-        return;
-    }
-    setTestStatus({type: 'loading', message: "Testing connection to Kashmir node..."});
-    try {
-        const ai = new GoogleGenAI({ apiKey: customKey.trim() });
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: "Hi"
-        });
-        
-        if (response.text) {
-            setTestStatus({type: 'success', message: "Success! Your key is now active."});
-            localStorage.setItem('hadi_custom_api_key', customKey.trim());
-        }
-    } catch (err: any) {
-        setTestStatus({type: 'error', message: "Connection failed: " + (err.message || "Invalid Key")});
-    }
-  };
-
+  // Handle Gemini content generation
   const handleAskHadi = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!chatInput.trim() || isChatLoading) return;
@@ -102,44 +66,30 @@ function App() {
     setIsChatLoading(true);
 
     try {
-      const apiKey = getActiveApiKey();
-
-      if (!apiKey || apiKey === "undefined" || apiKey === "") {
-        throw new Error("No API key available. Please click the status indicator to enter your own Gemini key.");
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
-      
-      const systemInstruction = `
-        You are Urwan Nafi Mir (Hadi Mir). 
-        You live in Kashmir, India. You are a self-taught Web3 security trainee.
-        Answer in first person ("I"). 
-        If anyone asks "Who are your friends?", say "I have many friends." and do not list names unless asked for specific people.
-        If asked about your father Muneer Ahmed, say he passed away in a tragic accident and say "May Allah grant him paradise."
-      `;
+      // Always create a new GoogleGenAI instance right before making an API call
+      // using process.env.API_KEY exclusively.
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+      const systemInstruction = `You are Hadi (Urwan Mir) from Kashmir. Self-taught Web3 enthusiast. Respond in first person. Be humble but determined. You are currently mastering React/TS and preparing for Web3 Security Research.`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: [
-          ...chatHistory.slice(-6).map(m => ({
+          ...chatHistory.slice(-4).map(m => ({
             role: m.role === 'ai' ? 'model' : 'user',
             parts: [{ text: m.text }]
           })),
           { role: 'user', parts: [{ text: userMessage }] }
         ],
-        config: {
-          systemInstruction: systemInstruction,
-          temperature: 0.7,
+        config: { 
+            systemInstruction, 
+            temperature: 0.7 
         }
       });
 
-      setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "Connection lost. Please try again." }]);
+      // Use the .text property directly (not a method)
+      setChatHistory(prev => [...prev, { role: 'ai', text: response.text || "Connection weak. Try again." }]);
     } catch (e: any) {
-      console.error("Critical AI Error:", e);
-      let errorDetail = e.message || "Service Interrupted.";
-      if (e?.message?.includes("403")) errorDetail = "API Key Blocked/Leaked. You must use a personal key.";
-      
-      setChatHistory(prev => [...prev, { role: 'ai', text: `Node error: ${errorDetail}. Click the green indicator to update your configuration.` }]);
+      setChatHistory(prev => [...prev, { role: 'ai', text: `Node error: ${e.message}.` }]);
     } finally {
       setIsChatLoading(false);
     }
@@ -162,10 +112,8 @@ function App() {
       </header>
 
       <main className={`portfolio-container ${visible ? 'visible' : ''}`}>
-        
-        {/* --- Hero Section --- */}
         <section className="hero-section">
-          <div className="badge">Rising from Kashmir</div>
+          <div className="badge">Kashmir Node Online</div>
           <h1 className="hero-title">{MY_INFO.heroName}</h1>
           <p className="role-tagline">{MY_INFO.currentRole}</p>
           <p className="mission-statement">{MY_INFO.mission}</p>
@@ -180,19 +128,11 @@ function App() {
           </div>
         </section>
 
-        {/* --- Interactive AI Interface --- */}
         <section className="ai-interface-section">
           <div className="ai-chat-card glass-card">
             <div className="chat-header">
-              {/* Trigger for the secret pop-up */}
-              <div 
-                className="status-trigger" 
-                onClick={() => {
-                    console.log("Opening Settings Modal...");
-                    setIsKeyModalOpen(true);
-                }}
-              >
-                <div className="status-indicator online"></div>
+              <div className="status-indicator-wrapper">
+                <div className="status-indicator online pulse-double"></div>
               </div>
               <h3>Talk to {MY_INFO.headerName}</h3>
               <p>Mir AI Interface</p>
@@ -201,7 +141,7 @@ function App() {
             <div className="chat-body">
               {chatHistory.length === 0 && (
                 <div className="chat-empty">
-                  <p>Ask me about my roadmap, my technical stack, or my journey in Web3.</p>
+                  <p>I am your digital twin. Ask me about my roadmap or technical journey.</p>
                 </div>
               )}
               {chatHistory.map((msg, i) => (
@@ -220,7 +160,7 @@ function App() {
             <form className="chat-input-area" onSubmit={handleAskHadi}>
               <input 
                 type="text" 
-                placeholder="Ask Urwan anything..." 
+                placeholder="Ask anything..." 
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 disabled={isChatLoading}
@@ -232,7 +172,6 @@ function App() {
           </div>
         </section>
 
-        {/* --- Roadmap Section --- */}
         <section className="roadmap-section">
           <h2 className="section-title">Professional Roadmap</h2>
           <div className="roadmap-container">
@@ -250,9 +189,17 @@ function App() {
               </div>
             ))}
           </div>
+
+          <div className="roadmap-actions">
+            <a href="https://web3skills.vercel.app/" target="_blank" rel="noopener" className="roadmap-btn web3skills">
+                Explore Roadmap (Web3 Skills)
+            </a>
+            <a href="https://securitypg.vercel.app/" target="_blank" rel="noopener" className="roadmap-btn securitypg">
+                Practice Security (Security Playground)
+            </a>
+          </div>
         </section>
 
-        {/* --- Stacks --- */}
         <section className="stack-future">
           <h2 className="section-title">Core Competencies</h2>
           <div className="stack-grid">
@@ -266,46 +213,9 @@ function App() {
         </section>
 
         <footer className="portfolio-footer">
-          <p>© {new Date().getFullYear()} {MY_INFO.fullName}. Persistence over hardware.</p>
+          <p>© {new Date().getFullYear()} Urwan Nafi Mir. Persistence over hardware.</p>
         </footer>
       </main>
-
-      {/* --- Secret Key Override Modal (Rendered at top level) --- */}
-      {isKeyModalOpen && (
-        <div className="key-modal-overlay" onClick={() => setIsKeyModalOpen(false)}>
-            <div className="key-modal glass-card" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h3>Node Configuration</h3>
-                    <button className="close-btn" onClick={() => setIsKeyModalOpen(false)}>&times;</button>
-                </div>
-                <div className="modal-body">
-                    <p className="modal-desc">Enter your own Gemini API key to override the system defaults. This key will be saved locally in your browser.</p>
-                    <div className="input-group">
-                        <label>Your Gemini API Key</label>
-                        <input 
-                            type="text" 
-                            placeholder="AIzaSy..." 
-                            value={customKey}
-                            onChange={e => setCustomKey(e.target.value)}
-                        />
-                    </div>
-                    {testStatus.message && (
-                        <div className={`test-status ${testStatus.type}`}>
-                            {testStatus.message}
-                        </div>
-                    )}
-                    <div className="modal-actions">
-                        <button className="test-btn primary" onClick={testApiKey} disabled={testStatus.type === 'loading'}>
-                            {testStatus.type === 'loading' ? <ThinkingIcon /> : "Test & Save Key"}
-                        </button>
-                        <button className="clear-btn" onClick={() => { setCustomKey(""); localStorage.removeItem('hadi_custom_api_key'); setTestStatus({type: 'idle', message: ""}); }}>
-                            Clear Override
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-      )}
     </div>
   );
 }
